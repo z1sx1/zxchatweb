@@ -1,4 +1,18 @@
 <!DOCTYPE html>
+<script>
+// Early SW guard — when this file is loaded as a service worker via ?sw, handle it here and stop
+if(typeof WorkerGlobalScope!=='undefined' && self instanceof ServiceWorkerGlobalScope){
+  const CACHE='zxchat-v2';
+  self.addEventListener('install',e=>{self.skipWaiting();});
+  self.addEventListener('activate',e=>{e.waitUntil(self.clients.claim());});
+  self.addEventListener('fetch',e=>{
+    if(e.request.method!=='GET')return;
+    e.respondWith(fetch(e.request).catch(()=>new Response('',{status:408})));
+  });
+  // Stop processing HTML
+  throw new Error('SW_INIT');
+}
+</script>
 <html lang="en">
 <head>
 <meta charset="UTF-8"/>
@@ -2247,28 +2261,22 @@ setInterval(()=>{
 console.log('%c ZX CHAT READY ','background:#000;color:#fff;font-family:monospace;padding:6px 14px;');
 </script>
 <script>
-// ── SERVICE WORKER (PWA) ──
-if('serviceWorker' in navigator){
-  // Inline service worker as blob URL
-  const swCode = `
-    const CACHE='zxchat-v1';
-    const ASSETS=['/'];
-    self.addEventListener('install',e=>{
-      e.waitUntil(caches.open(CACHE).then(c=>c.addAll(ASSETS)).catch(()=>{}));
-      self.skipWaiting();
-    });
-    self.addEventListener('activate',e=>{
-      e.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(k=>k!==CACHE).map(k=>caches.delete(k)))));
-      self.clients.claim();
-    });
-    self.addEventListener('fetch',e=>{
-      if(e.request.method!=='GET')return;
-      e.respondWith(fetch(e.request).catch(()=>caches.match(e.request)));
-    });
-  `;
-  const blob = new Blob([swCode],{type:'application/javascript'});
-  const swUrl = URL.createObjectURL(blob);
-  navigator.serviceWorker.register(swUrl,{scope:'/'}).catch(()=>{});
+// ── SERVICE WORKER (PWA) ── self-registration trick for single-file apps
+if(location.search==='?sw'){
+  // Running as service worker
+  const CACHE='zxchat-v2';
+  self.addEventListener('install',e=>{self.skipWaiting();});
+  self.addEventListener('activate',e=>{
+    e.waitUntil(self.clients.claim());
+  });
+  self.addEventListener('fetch',e=>{
+    if(e.request.method!=='GET')return;
+    e.respondWith(fetch(e.request).catch(()=>caches.match(e.request).then(r=>r||fetch(e.request))));
+  });
+} else if('serviceWorker' in navigator){
+  // Register this same HTML file as the SW using ?sw param
+  navigator.serviceWorker.register(location.pathname+'?sw',{scope:'./'})
+    .catch(err=>console.warn('SW registration failed:',err));
 }
 
 // ── INSTALL PROMPT ──
