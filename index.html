@@ -139,7 +139,7 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:'DM San
 #reply-prev-text{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-family:'DM Sans',sans-serif;}
 .rp-close{cursor:pointer;background:none;border:none;color:var(--text3);margin-left:8px;font-size:15px;}
 .input-row{display:flex;align-items:flex-end;gap:8px;}
-#msg-in{flex:1;background:var(--surface2);border:1px solid var(--border2);border-radius:10px;color:var(--text);padding:10px 14px;font-size:14px;font-family:'DM Sans',sans-serif;outline:none;resize:none;max-height:100px;line-height:1.45;}
+#msg-in{flex:1;min-width:0;background:var(--surface2);border:1px solid var(--border2);border-radius:10px;color:var(--text);padding:10px 12px;font-size:14px;font-family:'DM Sans',sans-serif;outline:none;resize:none;max-height:100px;line-height:1.45;}
 #msg-in:focus{border-color:var(--text2);}
 #msg-in::placeholder{color:var(--text3);}
 .inp-btn{width:38px;height:38px;background:transparent;border:1px solid var(--border2);border-radius:9px;color:var(--text3);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:500;flex-shrink:0;transition:.15s;font-family:'DM Sans',sans-serif;}
@@ -324,8 +324,11 @@ input[type=file]{display:none;}
   #kbhint{display:none;}
   #back-btn{display:flex!important;}
   .ci{padding:15px 14px;}
-  .inp-btn{width:42px;height:42px;font-size:18px;}
+  .inp-btn{width:38px;height:38px;font-size:15px;}
+  #voice-btn{width:38px;height:38px;}
   #msg-in{font-size:16px;}
+  .input-row{gap:5px;}
+  #input-wrap{padding:10px 10px;}
   .mb{font-size:14px;}
   .mbw{max-width:78%;}
 }
