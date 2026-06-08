@@ -408,7 +408,8 @@ input[type=file]{display:none;}
           </div>
           <div class="ch-acts">
             <button class="ib" id="mute-btn" title="Mute" onclick="toggleMute()"><svg id="mute-icon" viewBox="0 0 24 24"><path d="M18 8a6 6 0 0 1-6 6m0 0a6 6 0 0 1-6-6m6 6v4m-3 0h6"/><path d="M15 8a3 3 0 0 0-6 0v5"/></svg></button>
-
+            <button class="ib" title="Search" onclick="toggleMsgSearch()"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m16.5 16.5 4 4"/></svg></button>
+            <button class="ib" title="Info" onclick="openInfoPanel()"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg></button>
           </div>
         </div>
         <div id="sbar"><div class="sdot"></div><span id="sbar-txt">Connected · ZX Servers</span></div>
@@ -1222,7 +1223,7 @@ function ctxForward(){
   );window._fwdMsg=fmsg;
 }
 function doForward(type,id){const msg=window._fwdMsg;if(!msg)return;const origC=CHAT,origT=CTYPE;CHAT=id;CTYPE=type;const fm={...msg,id:'m'+Date.now(),from:ME.id,ts:Date.now(),forwarded:true,replyTo:null,replyToText:null};pushMsg(fm);CHAT=origC;CTYPE=origT;closeModal();toast('Forwarded!','ok');renderMsgs();renderList();}
-function ctxDelete(){if(!CTX_MSG){hideCtx();return;}if(CTYPE==='group'){const msgs=DB.g('msgs')||{};msgs[CHAT]=(msgs[CHAT]||[]).filter(x=>x.id!==CTX_MSG.id);DB.s('msgs',msgs);}else{const dms=DB.g('dms')||{};const k=dmk(ME.id,CHAT);dms[k]=(dms[k]||[]).filter(x=>x.id!==CTX_MSG.id);DB.s('dms',dms);}renderMsgs();toast('Deleted','ok');hideCtx();}
+async function ctxDelete(){if(!CTX_MSG){hideCtx();return;}const msgId=CTX_MSG.id;hideCtx();if(CTYPE==='group'){const msgs=DB.g('msgs')||{};msgs[CHAT]=(msgs[CHAT]||[]).filter(x=>x.id!==msgId);await DB.sa('msgs',msgs);}else{const dms=DB.g('dms')||{};const k=dmk(ME.id,CHAT);dms[k]=(dms[k]||[]).filter(x=>x.id!==msgId);await DB.sa('dms',dms);}renderMsgs();toast('Deleted','ok');}
 
 /* ── ATTACH / FILES ── */
 function toggleAttach(){document.getElementById('attach-menu').classList.toggle('on');document.getElementById('emo-pick').classList.remove('on');}
@@ -1509,7 +1510,10 @@ function autoH(el){el.style.height='auto';el.style.height=Math.min(el.scrollHeig
 
 /* ── RIGHT PANEL ── */
 function openInfoPanel(){
-  document.getElementById('rp').classList.add('on');
+  if(!CHAT){toast('Open a chat first','wn');return;}
+  const rp=document.getElementById('rp');
+  if(rp.classList.contains('on')&&rp.dataset.chat===CHAT){rp.classList.remove('on');return;}
+  rp.classList.add('on');rp.dataset.chat=CHAT;
   const users=DB.g('users')||[];const groups=DB.g('groups')||[];
   if(CTYPE==='group'){
     const g=groups.find(x=>x.id===CHAT);if(!g)return;
@@ -1592,7 +1596,7 @@ function openInfoPanel(){
       </div>`;
   }
 }
-function closeRP(){document.getElementById('rp').classList.remove('on');}
+function closeRP(){const rp=document.getElementById('rp');rp.classList.remove('on');rp.dataset.chat='';}
 
 /* ── BLOCK / UNFRIEND / CLEAR / DELETE ── */
 function blockUser(uid){
